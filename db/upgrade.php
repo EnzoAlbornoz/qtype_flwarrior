@@ -15,24 +15,21 @@
 // along with FLWarrior.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Moodle formal language question definition class.
+ * Provides the {@see xmldb_qtype_flwarrior_upgrade()} function.
  *
  * @package   qtype_flwarrior
  * @copyright 2021 Enzo Coelho Albornoz <enzocoelhoalbornoz@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// Verify running on Moodle.
 defined('MOODLE_INTERNAL') || die();
-// Define plugin name.
-$plugin->component = 'qtype_flwarrior';
-// Define plugin release name
-$plugin->release = 'v0.0.1';
-// Define current version.
-$plugin->version  = 2021060100;
-// Define earliest version supported (Latest Moodle 3.5).
-$plugin->requires = 2018120310;
-// Define the maturity of this plugin.
-$plugin->maturity = MATURITY_ALPHA;
-// Define dependencies.
-$plugin->dependencies = [];
+
+/**
+ * Define upgrade steps to be performed to upgrade the plugin from the old version to the current one.
+ *
+ * @param int $oldversion Version number the plugin is being upgraded from.
+ */
+function xmldb_qtype_flwarrior_upgrade($oldversion) {
+
+    return true;
+}
