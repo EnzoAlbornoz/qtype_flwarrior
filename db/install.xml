@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+  <XMLDB PATH="question/type/flwarrior/db" VERSION="20210628" COMMENT="XMLDB file for Moodle question/type/flwarrior">
+    <TABLES>
+      <TABLE NAME="qtype_flwarrior_machines" COMMENT="Default comment for qtype_flwarrior, please edit me">
+        <FIELDS>
+          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+          <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+          <FIELD NAME="type" TYPE="char" LENGTH="3" NOTNULL="true" SEQUENCE="false" />
+        </FIELDS>
+        <KEYS>
+          <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        </KEYS>
+      </TABLE>
+      <TABLE NAME="qtype_flwarrior_m_states" COMMENT="Default comment for qtype_flwarrior, please edit me">
+        <FIELDS>
+          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+          <FIELD NAME="machine_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+          <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="is_entry" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+          <FIELD NAME="is_exit" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        </FIELDS>
+        <KEYS>
+          <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+          <KEY NAME="machine_id" TYPE="foreign" FIELDS="machine_id" REFTABLE="qtype_flwarrior_machines" REFFIELDS="id" />
+        </KEYS>
+      </TABLE>
+      <TABLE NAME="qtype_flwarrior_m_alphabet" COMMENT="Default comment for qtype_flwarrior, please edit me">
+        <FIELDS>
+          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+          <FIELD NAME="machine_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="type" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="symbol" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        </FIELDS>
+        <KEYS>
+          <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+          <KEY NAME="machine_id" TYPE="foreign" FIELDS="machine_id" REFTABLE="qtype_flwarrior_machines" REFFIELDS="id" />
+        </KEYS>
+      </TABLE>
+      <TABLE NAME="qtype_flwarrior_m_trans" COMMENT="Default comment for qtype_flwarrior, please edit me">
+        <FIELDS>
+          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+          <FIELD NAME="machine_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="from_state_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="with_head_symbol_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="with_memory_symbol_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="to_state_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="write_symbol_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="head_direction" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        </FIELDS>
+        <KEYS>
+          <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+          <KEY NAME="machine_id" TYPE="foreign" FIELDS="machine_id" REFTABLE="qtype_flwarrior_machines" REFFIELDS="id" />
+          <KEY NAME="from_state_id" TYPE="foreign" FIELDS="from_state_id" REFTABLE="qtype_flwarrior_m_states" REFFIELDS="id" />
+          <KEY NAME="to_state_id" TYPE="foreign" FIELDS="to_state_id" REFTABLE="qtype_flwarrior_m_states" REFFIELDS="id" />
+          <KEY NAME="with_head_symbol_id" TYPE="foreign" FIELDS="with_head_symbol_id" REFTABLE="qtype_flwarrior_m_alphabet" REFFIELDS="id" />
+          <KEY NAME="with_memory_symbol_id" TYPE="foreign" FIELDS="with_memory_symbol_id" REFTABLE="qtype_flwarrior_m_alphabet" REFFIELDS="id" />
+          <KEY NAME="write_symbol_id" TYPE="foreign" FIELDS="write_symbol_id" REFTABLE="qtype_flwarrior_m_alphabet" REFFIELDS="id" />
+        </KEYS>
+      </TABLE>
+    </TABLES>
+  </XMLDB>

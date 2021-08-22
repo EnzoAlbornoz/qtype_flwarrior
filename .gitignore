@@ -481,3 +481,6 @@ composer.lock
 .codechecker/
 # Ignore VSCode Settings
 .vscode/
+# Ignore Moodle Files
+.moodle-data/
+.moodle-db/

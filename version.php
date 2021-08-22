@@ -29,9 +29,9 @@ $plugin->component = 'qtype_flwarrior';
 // Define plugin release name
 $plugin->release = 'v0.0.1';
 // Define current version.
-$plugin->version  = 2021060100;
-// Define earliest version supported (Latest Moodle 3.5).
-$plugin->requires = 2018120310;
+$plugin->version  = 2021060101;
+// Define earliest version supported (Moodle 3.5).
+$plugin->requires = 2018051703;
 // Define the maturity of this plugin.
 $plugin->maturity = MATURITY_ALPHA;
 // Define dependencies.
