@@ -34,22 +34,34 @@ defined('MOODLE_INTERNAL') || die();
  */
 class qtype_flwarrior_edit_form extends question_edit_form {
 
-    protected function definition_inner(MoodleQuickForm $mform) {
+    /**
+     * @param MoodleQuickForm $mform
+     * @throws coding_exception
+     */
+    protected function definition_inner($mform) {
+        global $COURSE, $CFG, $DB, $PAGE;
+        $CFG->cachejs = false;
         /* Remove Unused Form Data*/
         /* Add Needed Fields to Process a Machine */
         $mform->addElement('header', 'machine-tests', get_string(
             'questionadd_machinetests', 'qtype_flwarrior'
         ));
         /* Add Test Inputs */
-        $machinetestgrp[] =& $mform->createElement('text', 'machine-test-word', 'Machine Test Value');
-        $machinetestgrp[] =& $mform->createElement('checkbox', 'machine-test-should-match', 'Should Match');
-        $mform->addGroup($machinetestgrp, 'machine-test', 'Machine Test 1');
+//        $mform->addElement('tags', 'machine-match-true-list', 'Should Match');
+        $machinetestgrp[] =& $mform->createElement('text', 'machine-test-word', '');
+        $machinetestgrp[] =& $mform->createElement('checkbox', 'machine-test-should-match', null, 'Should Match ?');
+//        $machinetestgrp[] =& $mform->createElement('tags', 'machine-test-allowed', 'Tests');
+        $mform->addGroup($machinetestgrp, 'machine-test', 'Test 1');
+        $mform->addElement('button', 'machine-test-add-test', 'Add New Test');
+        $mform->addRule("machine-test", "required", );
+        // Define Listeners
+        $PAGE->requires->js_call_amd('qtype_flwarrior/qtype_flwarrior', 'setup_edit_tests_button');
     }
+
 
     protected function data_preprocessing($question) {
         $question = parent::data_preprocessing($question);
         $question = $this->data_preprocessing_hints($question);
-
         return $question;
     }
 
