@@ -34,6 +34,9 @@ defined('MOODLE_INTERNAL') || die();
  */
 class qtype_flwarrior_edit_form extends question_edit_form {
 
+    const NUM_TESTCASES_START = 5;  // Num empty test cases with new questions.
+    const NUM_TESTCASES_ADD = 1;    // Extra empty test cases to add.
+
     /**
      * @param MoodleQuickForm $mform
      * @throws coding_exception
@@ -43,19 +46,20 @@ class qtype_flwarrior_edit_form extends question_edit_form {
         $CFG->cachejs = false;
         /* Remove Unused Form Data*/
         /* Add Needed Fields to Process a Machine */
+        if (isset($this->question->options->testcases)) {
+            $numtestcases = count($this->question->options->testcases);
+        } else {
+            $numtestcases = self::NUM_TESTCASES_START;
+        }
         $mform->addElement('header', 'machine-tests', get_string(
             'questionadd_machinetests', 'qtype_flwarrior'
         ));
         /* Add Test Inputs */
-//        $mform->addElement('tags', 'machine-match-true-list', 'Should Match');
         $machinetestgrp[] =& $mform->createElement('text', 'machine-test-word', '');
         $machinetestgrp[] =& $mform->createElement('checkbox', 'machine-test-should-match', null, 'Should Match ?');
-//        $machinetestgrp[] =& $mform->createElement('tags', 'machine-test-allowed', 'Tests');
         $mform->addGroup($machinetestgrp, 'machine-test', 'Test 1');
         $mform->addElement('button', 'machine-test-add-test', 'Add New Test');
-        $mform->addRule("machine-test", "required", );
-        // Define Listeners
-        $PAGE->requires->js_call_amd('qtype_flwarrior/qtype_flwarrior', 'setup_edit_tests_button');
+        $mform->addRule("machine-test", "Field is required", "required" );
     }
 
 

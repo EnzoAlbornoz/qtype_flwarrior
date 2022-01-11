@@ -25,7 +25,7 @@ services:
     moodle:
         depends_on: ["moodledb"]
         # Use Bitnami Moodle
-        image: bitnami/moodle:3.5.3
+        image: bitnami/moodle:3.11.3
         container_name: moodle
         # Restart Only on Fail
         restart: on-failure
@@ -34,22 +34,22 @@ services:
             MOODLE_USERNAME: admin
             MOODLE_PASSWORD: supersecure
             MOODLE_EMAIL: enzo.c.albornoz@grad.ufsc.br
-            MARIADB_HOST: moodledb
-            MARIADB_PORT_NUMBER: 3306
+            MOODLE_DATABASE_HOST: moodledb
+            MOODLE_DATABASE_PORT_NUMBER: 3306
             MOODLE_DATABASE_USER: root
             MOODLE_DATABASE_PASSWORD: root
             MOODLE_DATABASE_NAME: moodle
         # Configure Mount Points
         volumes:
             # Persis Moodle Data
-            - "moodle-data:/bitnami/moodle"
+            - "moodle-data:/bitnami"
             # Mount All Files on this Folder
             - ".:/bitnami/moodle/question/type/flwarrior"
         networks:
             - "moodle-net"
         ports:
-            - "8080:80"
-            - "8443:443"
+            - "8080:8080"
+            - "8443:8443"
 networks:
     moodle-net:
         driver: "bridge"
