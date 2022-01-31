@@ -25,10 +25,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/question/engine/lib.php');
 require_once($CFG->dirroot . '/question/type/flwarrior/question.php');
-
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_machine_test.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/utils.php');
 
 /**
  * The flwarrior question type.
@@ -48,8 +51,73 @@ class qtype_flwarrior extends question_type {
         $this->delete_files_in_hints($questionid, $contextid);
     }
 
+    /**
+     * @param qtype_flwarrior_question $question
+     * @return void
+     * @throws dml_exception
+     */
     public function save_question_options($question) {
+        global $DB;
+
         $this->save_hints($question);
+
+        // Save Tests in Database
+        foreach ($question->{'machine-test-{no}'} as $test_form) {
+            $id = array_key_exists('machine-test-id-{no}', $test_form)
+                ? $test_form['machine-test-id-{no}']
+                : null;
+            $word = array_key_exists('machine-test-word-{no}', $test_form)
+                ? $test_form['machine-test-word-{no}']
+                : '';
+            $should_match = boolval(
+                array_key_exists('machine-test-should-match-{no}', $test_form)
+                    ? $test_form['machine-test-should-match-{no}']
+                    : 0
+            );
+
+            $test = new fl_machine_test($id, $word, $should_match, 1000, $question->id);
+
+            if ($test->id != null && $DB->record_exists('qtype_flwarrior_tests', array('id' => $test->id))) {
+                // Update
+                $DB->update_record('qtype_flwarrior_tests', $test);
+            } else {
+                /** @var int $inserted_id Create new entry */
+                $inserted_id = $DB->insert_record('qtype_flwarrior_tests', $test);
+                $test->id = $inserted_id;
+            }
+        }
+
+    }
+
+    /**
+     * @param qtype_flwarrior_question $question
+     * @return bool
+     */
+    public function get_question_options($question)
+    {
+        global $CFG, $DB, $OUTPUT;
+        try {
+            if (parent::get_question_options($question)) {
+
+                // Fetch and Parse Tests from DB (indexed by id)
+                $tests = array_map(
+                    function($db_test) { return fl_machine_test::from_db_entry($db_test); },
+                    $DB->get_records('qtype_flwarrior_tests', array('question_id' => $question->id))
+                );
+
+                // Insert tests into question object
+                $question->machine_tests = $tests ? [...$tests] : array();
+
+
+                error_log("[get_question_options] ".print_r($question->machine_tests, true), 3, '/var/log/php.log');
+
+
+                return true;
+            }
+        } catch (dml_exception $e) {
+            error_log($e->getMessage() . ":" . $e->getTraceAsString());
+        } // Just Ignore and Return
+        return false;
     }
 
     protected function initialise_question_instance(question_definition $question, $questiondata) {

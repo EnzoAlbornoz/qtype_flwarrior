@@ -43,33 +43,99 @@ class qtype_flwarrior_edit_form extends question_edit_form {
      */
     protected function definition_inner($mform) {
         global $COURSE, $CFG, $DB, $PAGE;
-        $CFG->cachejs = false;
-        /* Remove Unused Form Data*/
-        /* Add Needed Fields to Process a Machine */
-        if (isset($this->question->options->testcases)) {
-            $numtestcases = count($this->question->options->testcases);
-        } else {
-            $numtestcases = self::NUM_TESTCASES_START;
-        }
+        /* Add Machine Tests Section */
         $mform->addElement('header', 'machine-tests', get_string(
-            'questionadd_machinetests', 'qtype_flwarrior'
+            'question_heading_machine_tests', 'qtype_flwarrior'
         ));
-        /* Add Test Inputs */
-        $machinetestgrp[] =& $mform->createElement('text', 'machine-test-word', '');
-        $machinetestgrp[] =& $mform->createElement('checkbox', 'machine-test-should-match', null, 'Should Match ?');
-        $mform->addGroup($machinetestgrp, 'machine-test', 'Test 1');
-        $mform->addElement('button', 'machine-test-add-test', 'Add New Test');
-        $mform->addRule("machine-test", "Field is required", "required" );
+
+        /* @type qtype_flwarrior_question $question Repeat for each test */
+        $question = $this->question;
+        /* Define Repeating Groups*/
+        $tests_in_question = count($question->machine_tests);
+        $repeating_num = max($tests_in_question, 1);
+        $repeating_groups = array();
+        $repeated_options = array();
+
+        $PAGE->requires->js_call_amd('qtype_flwarrior/debug', 'log', array($tests_in_question, ($repeating_num)));
+
+        /* Define what going to be grouped in repeated elements */
+        $repeat_array = array();
+        /* @type HTML_QuickForm_text $test_word */
+        $test_word = $mform->createElement('text', 'machine-test-word-{no}', '');
+        /* @type HTML_QuickForm_checkbox $test_should_match */
+        $test_should_match = $mform->createElement(
+            'advcheckbox',
+            'machine-test-should-match-{no}',
+            null,
+            'Should Match ?',
+            null,
+            array(0, 1)
+        );
+        $test_should_match->setValue(true);
+        /* @type HTML_QuickForm_hidden $test_id */
+        $test_id = $mform->createElement('hidden', 'machine-test-id-{no}');
+
+        /* Add them to group */
+        $repeat_array[] = $test_word;
+        $repeat_array[] = $test_should_match;
+        $repeat_array[] = $test_id;
+
+        /* Add elements to group*/
+        /* @type HTML_QuickForm_group $repeatGroup */
+        $repeatGroup = $mform->createElement('group', 'machine-test-{no}', 'Test {no}');
+        $repeatGroup->setElements($repeat_array);
+
+        /* Define Group Options*/
+        $repeated_options['machine-test-{no}[machine-test-word-{no}]']['type'] = PARAM_TEXT;
+        $repeated_options['machine-test-{no}[machine-test-id-{no}]']['type'] = PARAM_INT;
+        $repeated_options['machine-test-{no}[machine-test-should-match-{no}]']['type'] = PARAM_BOOL;
+        /* Add group to form */
+        $repeating_groups[] = $repeatGroup;
+
+        /* Repeat elements */
+        $this->repeat_elements(
+            $repeating_groups,
+            $repeating_num,
+            $repeated_options,
+            'option_repeats',
+            'option_add_fields',
+            1,
+            'Add test',
+            true
+        );
+
+        /* For already existing tests, fill the values */
+        for ($idx = 0; $idx < $tests_in_question; $idx++) {
+            /* Transform array of elements into an object with the elements as values with their name as key */
+            $group_elements = flu_object_from_entries(
+                array_map(
+                    function ($el) {
+                        return array($el->getName(), $el);
+                    },
+                    $mform->getElement('machine-test-{no}['.$idx.']')->getElements()
+                )
+            );
+            /* Update values */
+            $group_elements->{'machine-test-word-{no}'}->setValue($question->machine_tests[$idx]->word);
+            $group_elements->{'machine-test-should-match-{no}'}->setValue($question->machine_tests[$idx]->should_match);
+            $group_elements->{'machine-test-id-{no}'}->setValue($question->machine_tests[$idx]->id);
+        }
+
     }
 
-
     protected function data_preprocessing($question) {
+        global $PAGE;
         $question = parent::data_preprocessing($question);
         $question = $this->data_preprocessing_hints($question);
+
+
+        $PAGE->requires->js_call_amd('qtype_flwarrior/debug', 'log', array($question));
+
         return $question;
     }
 
-    public function qtype() {
+    public function qtype(): string
+    {
         return 'flwarrior';
     }
 }

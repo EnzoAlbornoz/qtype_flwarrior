@@ -29,4 +29,4 @@ $string['pluginnameediting'] = 'Editing a Fl Warrior question';
 $string['pluginnamesummary'] = "Teste";
 
 
-$string['questionadd_machinetests'] = 'Machine Tests';
+$string['question_heading_machine_tests'] = 'Machine Tests';

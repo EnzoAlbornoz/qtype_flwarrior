@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_machine_test.php');
 
 /**
  * Represents a FL Warrior question.
@@ -32,10 +34,15 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2021 Enzo Coelho Albornoz <enzocoelhoalbornoz@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_flwarrior_question extends question_graded_automatically_with_countback {
+class qtype_flwarrior_question extends question_graded_automatically {
+
+    // Teacher Defined Variables ===============================================
+    /* @type fl_machine_test[] Test List*/
+    public array $machine_tests;
+    // Student Defined Variables ===============================================
+//    public array $attempt_machine;
 
     public function get_expected_data() {
-        // TODO.
         return array();
     }
 

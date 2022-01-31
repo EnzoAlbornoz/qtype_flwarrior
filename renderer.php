@@ -33,15 +33,20 @@ defined('MOODLE_INTERNAL') || die();
 class qtype_flwarrior_renderer extends qtype_renderer {
     public function formulation_and_controls(question_attempt $qa,
         question_display_options $options) {
+        global $PAGE;
 
         /* @var qtype_flwarrior_question Fetch Question Data */
         $question = $qa->get_question();
         /* Fetch Question Text */
         $questiontext = $question->format_questiontext($qa);
+
+        $PAGE->requires->js_call_amd('qtype_flwarrior/quiz_debug_data', 'init', array($question->testo));
         /* Create Elements */
         $result = <<<HTML
                 <header id="question-header">
                     <span>{$questiontext}</span>
+                    <span>{$question->testo}</span>
+                    <span>End</span>
                 </header>
                 <div id="question-form">
                     <label for="machine">Enviar Máquina: </label>
