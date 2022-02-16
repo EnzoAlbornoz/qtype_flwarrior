@@ -31,28 +31,36 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_flwarrior_renderer extends qtype_renderer {
-    public function formulation_and_controls(question_attempt $qa,
-        question_display_options $options) {
+
+    public function formulation_and_controls(
+            question_attempt $qa,
+            question_display_options $options
+    ) {
         global $PAGE;
 
         /* @var qtype_flwarrior_question Fetch Question Data */
         $question = $qa->get_question();
+        $response = $qa->get_last_qt_var("answer");
+        $input_name = $qa->get_qt_field_name('answer');
+        error_log("[formulation_and_controls]:", print_r(strlen($response), true), 3, "/var/log/php.log");
         /* Fetch Question Text */
-        $questiontext = $question->format_questiontext($qa);
-
-        $PAGE->requires->js_call_amd('qtype_flwarrior/quiz_debug_data', 'init', array($question->testo));
+        $question_text = $question->format_questiontext($qa);
         /* Create Elements */
+        $machine_loaded = $response == null || !strcmp($response, "") ? "Pending" : "Loaded!";
         $result = <<<HTML
-                <header id="question-header">
-                    <span>{$questiontext}</span>
-                    <span>{$question->testo}</span>
-                    <span>End</span>
-                </header>
-                <div id="question-form">
-                    <label for="machine">Enviar Máquina: </label>
-                    <input name="machine" type="file" accept=".jff" />
-                </div>
-HTML;
+            <div id="question-header" class="qtext">
+                <span>{$question_text}</span>
+            </div>
+            <div id="question-form" class="ablock">
+                <label for="machine">Enviar Máquina: </label>
+                <input name="machine" type="file" accept=".jff" />
+                <input type="hidden" name="{$input_name}" id="machine_serialized" required value="{$response}"/>
+                <p>Status:</p>
+                <p id="machine_log">{$machine_loaded}</p>
+            </div>
+        HTML;
+        // Add JS
+        $PAGE->requires->js_call_amd("qtype_flwarrior/quiz_renderer", 'init', array($response));
 
         return $result;
     }

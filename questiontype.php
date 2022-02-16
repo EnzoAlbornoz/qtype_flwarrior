@@ -51,6 +51,10 @@ class qtype_flwarrior extends question_type {
         $this->delete_files_in_hints($questionid, $contextid);
     }
 
+    public function save_question($question) {
+        error_log("[save_question]".print_r($question, true)."\n", 3, "/var/log/php.log");
+    }
+
     /**
      * @param qtype_flwarrior_question $question
      * @return void
@@ -60,6 +64,8 @@ class qtype_flwarrior extends question_type {
         global $DB;
 
         $this->save_hints($question);
+
+        error_log("[save_question_options]\n", 3, "/var/log/php.log");
 
         // Save Tests in Database
         foreach ($question->{'machine-test-{no}'} as $test_form) {
@@ -108,10 +114,6 @@ class qtype_flwarrior extends question_type {
                 // Insert tests into question object
                 $question->machine_tests = $tests ? [...$tests] : array();
 
-
-                error_log("[get_question_options] ".print_r($question->machine_tests, true), 3, '/var/log/php.log');
-
-
                 return true;
             }
         } catch (dml_exception $e) {
@@ -123,6 +125,18 @@ class qtype_flwarrior extends question_type {
     protected function initialise_question_instance(question_definition $question, $questiondata) {
         // TODO.
         parent::initialise_question_instance($question, $questiondata);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public function delete_question($questionid, $contextid) {
+        global $DB;
+
+        $success = $DB->delete_records('qtype_flwarrior_tests', array('question_id' => $questionid));
+
+
+        return $success && parent::delete_question();
     }
 
     public function get_random_guess_score($questiondata) {

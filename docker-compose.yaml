@@ -63,8 +63,6 @@ services:
         restart: on-failure
         # Configure Volumes
         volumes:
-            # Load Wait-For
-            - "./wait-for.sh:/bin/wait-for"
             # Load Moodle Data
             - "moodle-data:/bitnami"
             # Mount All Files on this Folder
