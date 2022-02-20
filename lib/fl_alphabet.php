@@ -64,7 +64,7 @@ class fl_Alphabet {
     public function remove_symbol(fl_Symbol $symbol) {
         for ($idx = 0; $idx < count($this->symbols); $idx++) {
             if ($this->symbols[$idx]->is_equal_to($symbol)) {
-                array_slice($this->symbols, $idx, 1);
+                $this->symbols = array_slice($this->symbols, $idx, 1);
             }
         }
     }

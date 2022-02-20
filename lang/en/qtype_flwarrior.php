@@ -28,5 +28,10 @@ $string['pluginnameadding'] = 'Adding a Fl Warrior question';
 $string['pluginnameediting'] = 'Editing a Fl Warrior question';
 $string['pluginnamesummary'] = "Teste";
 
+$string['answer_files'] = 'Answer files';
+$string['attached_files'] = 'Attachments: {$a}';
+$string['accepted_file_types'] = 'Accepted file types';
+$string['answer_files'] = 'Answer files';
+
 
 $string['question_heading_machine_tests'] = 'Machine Tests';

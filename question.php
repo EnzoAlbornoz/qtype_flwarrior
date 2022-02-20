@@ -42,10 +42,6 @@ class qtype_flwarrior_question extends question_graded_automatically {
     // Student Defined Variables ===============================================
     public array $attempt_machine;
 
-//    public function response_file_areas() {
-//        return array('machine');
-//    }
-
     public function start_atempt() {
         global $DB;
     }
@@ -64,15 +60,51 @@ class qtype_flwarrior_question extends question_graded_automatically {
     }
 
 
+    /**
+     * @throws coding_exception
+     */
     public function summarise_response(array $response) {
-        // TODO.
         error_log("[summarise_response]", 3, '/var/log/php.log');
-        return null;
+        if (isset($response['machine'])  && $response['machine']) {
+            $machine_files = $response['machine']->get_files();
+            if (array_key_exists(0,$machine_files)) {
+                $file = $machine_files[0];
+                return get_string(
+                    'attached_files',
+                    'qtype_flwarrior',
+                    implode(
+                        ', ',
+                        $file->get_filename() . ' (' . display_size($file->get_filesize()) . ')'
+                    )
+                );
+            }
+        }
+        return '';
     }
 
-    public function is_complete_response(array $response) {
-        error_log("Teste!!!!".strlen($response['answer'] || "")."\n", 3, '/var/log/php.log');
-        return $response['answer'] != null && strcmp($response['answer'],"");
+    public function is_complete_response(array $response): bool {
+        error_log("Teste!!!!".print_r($response, true)."\n", 3, '/var/log/php.log');
+        // Check the filetypes.
+        /** @type question_file_saver $machine_field */
+        $machine_field = $response['machine'];
+        $filetypes_util = new \core_form\filetypes_util();
+        $allow_list = $filetypes_util->normalize_file_types(".jff");
+        // Check Machine is set
+        if (!(isset($machine_field) && $machine_field)) {
+            error_log("No machine\n", 3, '/var/log/php.log');
+            return false;
+        }
+        // Check Machine has at least 1 machine
+        $machine_files = array_values($machine_field->get_files());
+
+        if (!array_key_exists(0, $machine_files)) {
+            error_log("No files\n", 3, '/var/log/php.log');
+            return false;
+        }
+        // Check Machine file type
+        $file = $machine_files[0];
+
+        return $filetypes_util->is_allowed_file_type($file->get_filename(), $allow_list);
     }
 
     public function validate_response(array $response) {
@@ -86,12 +118,13 @@ class qtype_flwarrior_question extends question_graded_automatically {
 
     public function is_same_response(array $prevresponse, array $newresponse) {
         error_log("[is_same_response]:\n", 3, '/var/log/php.log');
-        return !strcmp($prevresponse['answer'], $newresponse['answer']);
+
+        // TODO: Implement Function
+        return false;
     }
 
     public function get_correct_response() {
-        // TODO.
-        return array();
+        return null;
     }
 
     public function check_file_access(
@@ -112,15 +145,23 @@ class qtype_flwarrior_question extends question_graded_automatically {
         }
     }
 
-    public function grade_response(array $response) {
-        // TODO: INSERT HERE THE MACHINE EXECUTION!!!!.
+    public function is_gradable_response(array $response): bool {
+        return (
+            array_key_exists('machine', $response) &&
+            $response['machine'] instanceof question_response_files
+        );
+    }
+
+    public function grade_response(array $response): array {
+        $machine_file = $response['machine'];
         $fraction = 0;
         return array($fraction, question_state::graded_state_for_fraction($fraction));
     }
 
     // Return a map from filename to file contents for all the attached files
     // in the given response.
-    private function get_attached_files($response) {
+    private function get_attached_files($response): array
+    {
         $attachments = array();
         if (array_key_exists('machine', $response) && $response['machine']) {
             $files = $response['machine']->get_files();
@@ -129,10 +170,5 @@ class qtype_flwarrior_question extends question_graded_automatically {
             }
         }
         return $attachments;
-    }
-
-    public function compute_final_grade($responses, $totaltries) {
-        // TODO.
-        return 0;
     }
 }

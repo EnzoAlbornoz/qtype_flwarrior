@@ -40,27 +40,23 @@ class qtype_flwarrior_renderer extends qtype_renderer {
 
         /* @var qtype_flwarrior_question Fetch Question Data */
         $question = $qa->get_question();
-        $response = $qa->get_last_qt_var("answer");
-        $input_name = $qa->get_qt_field_name('answer');
-        error_log("[formulation_and_controls]:", print_r(strlen($response), true), 3, "/var/log/php.log");
+        error_log("[formulation_and_controls]:\n", 3, "/var/log/php.log");
         /* Fetch Question Text */
         $question_text = $question->format_questiontext($qa);
         /* Create Elements */
-        $machine_loaded = $response == null || !strcmp($response, "") ? "Pending" : "Loaded!";
+        $file_input = $this->files_input($qa, 1, $options);
         $result = <<<HTML
             <div id="question-header" class="qtext">
                 <span>{$question_text}</span>
             </div>
             <div id="question-form" class="ablock">
-                <label for="machine">Enviar Máquina: </label>
-                <input name="machine" type="file" accept=".jff" />
-                <input type="hidden" name="{$input_name}" id="machine_serialized" required value="{$response}"/>
-                <p>Status:</p>
-                <p id="machine_log">{$machine_loaded}</p>
+                <div class="attachments">
+                    {$file_input}
+                </div>
             </div>
         HTML;
         // Add JS
-        $PAGE->requires->js_call_amd("qtype_flwarrior/quiz_renderer", 'init', array($response));
+        $PAGE->requires->js_call_amd("qtype_flwarrior/quiz_renderer", 'init');
 
         return $result;
     }
@@ -73,5 +69,66 @@ class qtype_flwarrior_renderer extends qtype_renderer {
     public function correct_response(question_attempt $qa) {
         // TODO.
         return '';
+    }
+
+    // From qtype_essay
+    public function files_input(
+        question_attempt $qa,
+        int $num_allowed,
+        question_display_options $options
+    ): string {
+        $filetypeslist = ".jff";
+        global $CFG, $COURSE;
+        require_once($CFG->dirroot . '/lib/form/filemanager.php');
+
+        $pickeroptions = new stdClass();
+        $pickeroptions->mainfile = null;
+        $pickeroptions->maxfiles = $num_allowed;
+        $pickeroptions->itemid = $qa->prepare_response_files_draft_itemid(
+            'machine', $options->context->id);
+        $pickeroptions->context = $options->context;
+        $pickeroptions->return_types = FILE_INTERNAL | FILE_CONTROLLED_LINK;
+
+        $pickeroptions->itemid = $qa->prepare_response_files_draft_itemid(
+            'machine', $options->context->id);
+        $pickeroptions->accepted_types = $filetypeslist;
+
+        $fm = new form_filemanager($pickeroptions);
+        $fm->options->maxbytes = get_user_max_upload_file_size(
+            $this->page->context,
+            $CFG->maxbytes,
+            $COURSE->maxbytes,
+            $qa->get_question()->maxbytes
+        );
+        $filesrenderer = $this->page->get_renderer('core', 'files');
+
+        $text = '';
+        if (!empty($filetypeslist)) {
+            $text = html_writer::tag(
+                'p',
+                get_string('accepted_file_types', 'qtype_flwarrior')
+            );
+            $filetypesutil = new \core_form\filetypes_util();
+            $filetypes = $filetypeslist;
+            $filetypedescriptions = $filetypesutil->describe_file_types($filetypes);
+            $text .= $this->render_from_template('core_form/filetypes-descriptions', $filetypedescriptions);
+        }
+
+        $output = html_writer::start_tag('fieldset');
+        $output .= html_writer::tag(
+            'legend',
+            get_string('answer_files', 'qtype_flwarrior'),
+            ['class' => 'sr-only']
+        );
+        $output .= $filesrenderer->render($fm);
+        $output .= html_writer::empty_tag('input', [
+            'type' => 'hidden',
+            'name' => $qa->get_qt_field_name('machine'),
+            'value' => $pickeroptions->itemid,
+        ]);
+        $output .= $text;
+        $output .= html_writer::end_tag('fieldset');
+
+        return $output;
     }
 }

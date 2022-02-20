@@ -41,18 +41,8 @@ require_once($CFG->dirroot . '/question/type/flwarrior/lib/utils.php');
  */
 class qtype_flwarrior extends question_type {
 
-    public function move_files($questionid, $oldcontextid, $newcontextid) {
-        parent::move_files($questionid, $oldcontextid, $newcontextid);
-        $this->move_files_in_hints($questionid, $oldcontextid, $newcontextid);
-    }
-
-    protected function delete_files($questionid, $contextid) {
-        parent::delete_files($questionid, $contextid);
-        $this->delete_files_in_hints($questionid, $contextid);
-    }
-
-    public function save_question($question) {
-        error_log("[save_question]".print_r($question, true)."\n", 3, "/var/log/php.log");
+    public function response_file_areas() {
+        return array('machine');
     }
 
     /**
@@ -147,5 +137,18 @@ class qtype_flwarrior extends question_type {
     public function get_possible_responses($questiondata) {
         // TODO.
         return array();
+    }
+
+    public function move_files($questionid, $oldcontextid, $newcontextid) {
+        parent::move_files($questionid, $oldcontextid, $newcontextid);
+        $fs = get_file_storage();
+        $fs->move_area_files_to_new_context($oldcontextid,
+            $newcontextid, 'qtype_essay', 'graderinfo', $questionid);
+    }
+
+    protected function delete_files($questionid, $contextid) {
+        parent::delete_files($questionid, $contextid);
+        $fs = get_file_storage();
+        $fs->delete_area_files($contextid, 'qtype_essay', 'graderinfo', $questionid);
     }
 }

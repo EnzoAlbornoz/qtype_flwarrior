@@ -20,6 +20,9 @@ class fl_State
     public function get_id() {
         return $this->id;
     }
+    public function get_label() {
+        return $this->label;
+    }
     public function set_as_entry(bool $is_entry) {
         $this->is_entry = $is_entry;
     }
