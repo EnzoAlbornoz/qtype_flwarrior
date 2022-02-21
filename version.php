@@ -27,11 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 // Define plugin name.
 $plugin->component = 'qtype_flwarrior';
 // Define plugin release name
-$plugin->release = 'v0.0.1';
+$plugin->release = 'v0.1.0';
 // Define current version.
 $plugin->version  = 2021060101;
-// Define earliest version supported (Moodle 3.5).
-$plugin->requires = 2018051703;
+// Define earliest version supported (Moodle 3.11).
+$plugin->requires = 2021051703;
 // Define the maturity of this plugin.
 $plugin->maturity = MATURITY_ALPHA;
 // Define dependencies.
