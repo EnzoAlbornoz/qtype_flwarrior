@@ -26,7 +26,7 @@ $string['pluginname'] = 'FLWarrior';
 $string['pluginname_link'] = 'question/type/flwarrior';
 $string['pluginnameadding'] = 'Adding a Fl Warrior question';
 $string['pluginnameediting'] = 'Editing a Fl Warrior question';
-$string['pluginnamesummary'] = "Teste";
+$string['pluginnamesummary'] = "Automatic grading for automatas";
 
 $string['answer_files'] = 'Answer files';
 $string['attached_files'] = 'Attachments: {$a}';

@@ -27,11 +27,13 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_machine_test.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/interop/JFFParser.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_machine.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/utils.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/question/engine/lib.php');
 require_once($CFG->dirroot . '/question/type/flwarrior/question.php');
-require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_machine_test.php');
-require_once($CFG->dirroot . '/question/type/flwarrior/lib/utils.php');
 
 /**
  * The flwarrior question type.
@@ -39,9 +41,11 @@ require_once($CFG->dirroot . '/question/type/flwarrior/lib/utils.php');
  * @copyright 2021 Enzo Coelho Albornoz <enzocoelhoalbornoz@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_flwarrior extends question_type {
+class qtype_flwarrior extends question_type
+{
 
-    public function response_file_areas() {
+    public function response_file_areas()
+    {
         return array('machine');
     }
 
@@ -50,7 +54,8 @@ class qtype_flwarrior extends question_type {
      * @return void
      * @throws dml_exception
      */
-    public function save_question_options($question) {
+    public function save_question_options($question)
+    {
         global $DB;
 
         $this->save_hints($question);
@@ -92,61 +97,64 @@ class qtype_flwarrior extends question_type {
     public function get_question_options($question)
     {
         global $CFG, $DB, $OUTPUT;
-        try {
-            if (parent::get_question_options($question)) {
+        if (parent::get_question_options($question)) {
 
-                // Fetch and Parse Tests from DB (indexed by id)
-                $tests = array_map(
-                    function($db_test) { return fl_machine_test::from_db_entry($db_test); },
-                    $DB->get_records('qtype_flwarrior_tests', array('question_id' => $question->id))
-                );
+            // Fetch and Parse Tests from DB (indexed by id)
+            $tests = array_map(
+                function ($db_test) {
+                    return fl_machine_test::from_db_entry_to_array($db_test);
+                },
+                $DB->get_records('qtype_flwarrior_tests', array('question_id' => $question->id))
+            );
 
-                // Insert tests into question object
-                $question->machine_tests = $tests ? [...$tests] : array();
+            // Insert tests into question object
+            $question->machine_tests = $tests ? [...$tests] : array();
 
-                return true;
-            }
-        } catch (dml_exception $e) {
-            error_log($e->getMessage() . ":" . $e->getTraceAsString());
-        } // Just Ignore and Return
+            return true;
+        }
         return false;
-    }
-
-    protected function initialise_question_instance(question_definition $question, $questiondata) {
-        // TODO.
-        parent::initialise_question_instance($question, $questiondata);
     }
 
     /**
      * @throws dml_exception
      */
-    public function delete_question($questionid, $contextid) {
+    public function delete_question($questionid, $contextid)
+    {
         global $DB;
-
         $success = $DB->delete_records('qtype_flwarrior_tests', array('question_id' => $questionid));
-
-
-        return $success && parent::delete_question();
+        if ($success) {
+            parent::delete_question();
+        }
     }
 
-    public function get_random_guess_score($questiondata) {
-        // TODO.
+    public function get_random_guess_score($questiondata)
+    {
         return 0;
     }
 
-    public function get_possible_responses($questiondata) {
-        // TODO.
+    public function get_possible_responses($questiondata)
+    {
         return array();
     }
 
-    public function move_files($questionid, $oldcontextid, $newcontextid) {
+    protected function initialise_question_instance(question_definition $question, $questiondata) {
+        // Load parent data
+        parent::initialise_question_instance($question, $questiondata);
+        // Load tests
+        error_log("[initialise_question_instance]\n".print_r($questiondata->machine_tests, true));
+        $question->machine_tests = $questiondata->machine_tests;
+    }
+
+    public function move_files($questionid, $oldcontextid, $newcontextid)
+    {
         parent::move_files($questionid, $oldcontextid, $newcontextid);
         $fs = get_file_storage();
         $fs->move_area_files_to_new_context($oldcontextid,
             $newcontextid, 'qtype_essay', 'graderinfo', $questionid);
     }
 
-    protected function delete_files($questionid, $contextid) {
+    protected function delete_files($questionid, $contextid)
+    {
         parent::delete_files($questionid, $contextid);
         $fs = get_file_storage();
         $fs->delete_area_files($contextid, 'qtype_essay', 'graderinfo', $questionid);

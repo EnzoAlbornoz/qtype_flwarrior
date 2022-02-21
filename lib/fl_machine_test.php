@@ -37,12 +37,13 @@ class fl_machine_test
     public ?int $question_id;
 
     public function __construct(
-        ?int $id,
+        ?int   $id,
         string $word,
-        bool $should_match = true,
-        int $max_iterations = 1000,
-        ?int $question_id = null
-    ) {
+        bool   $should_match = true,
+        int    $max_iterations = 1000,
+        ?int   $question_id = null
+    )
+    {
         $this->id = $id;
         $this->word = $word;
         $this->should_match = $should_match;
@@ -50,13 +51,47 @@ class fl_machine_test
         $this->question_id = $question_id;
     }
 
-    static function from_db_entry($db_entry): fl_machine_test {
+    public function to_array(): array
+    {
+        return array(
+            "id" => $this->id,
+            "word" => $this->word,
+            "should_match" => $this->should_match,
+            "max_iterations" => $this->max_iterations,
+            "question_id" => $this->question_id
+        );
+    }
+
+    static function from_db_entry($db_entry): fl_machine_test
+    {
         return new fl_machine_test(
             $db_entry->id,
             $db_entry->word,
             boolval($db_entry->should_match),
             $db_entry->max_iterations,
             $db_entry->question_id
+        );
+    }
+
+    static function from_array($entry): fl_machine_test
+    {
+        return new fl_machine_test(
+            $entry['id'],
+            $entry['word'],
+            boolval($entry['should_match']),
+            $entry['max_iterations'],
+            $entry['question_id']
+        );
+    }
+
+    static function from_db_entry_to_array($db_entry): array
+    {
+        return array(
+            "id" => $db_entry->id,
+            "word" => $db_entry->word,
+            "should_match" => boolval($db_entry->should_match),
+            "max_iterations" => $db_entry->max_iterations,
+            "question_id" => $db_entry->question_id
         );
     }
 }

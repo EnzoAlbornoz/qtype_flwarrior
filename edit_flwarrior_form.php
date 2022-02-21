@@ -32,16 +32,23 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2021 Enzo Coelho Albornoz <enzocoelhoalbornoz@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_flwarrior_edit_form extends question_edit_form {
+class qtype_flwarrior_edit_form extends question_edit_form
+{
 
     const NUM_TESTCASES_START = 5;  // Num empty test cases with new questions.
     const NUM_TESTCASES_ADD = 1;    // Extra empty test cases to add.
+
+    public function qtype(): string
+    {
+        return 'flwarrior';
+    }
 
     /**
      * @param MoodleQuickForm $mform
      * @throws coding_exception
      */
-    protected function definition_inner($mform) {
+    protected function definition_inner($mform)
+    {
         global $COURSE, $CFG, $DB, $PAGE;
         /* Add Machine Tests Section */
         $mform->addElement('header', 'machine-tests', get_string(
@@ -112,7 +119,7 @@ class qtype_flwarrior_edit_form extends question_edit_form {
                     function ($el) {
                         return array($el->getName(), $el);
                     },
-                    $mform->getElement('machine-test-{no}['.$idx.']')->getElements()
+                    $mform->getElement('machine-test-{no}[' . $idx . ']')->getElements()
                 )
             );
             /* Update values */
@@ -123,7 +130,8 @@ class qtype_flwarrior_edit_form extends question_edit_form {
 
     }
 
-    protected function data_preprocessing($question) {
+    protected function data_preprocessing($question)
+    {
         global $PAGE;
         $question = parent::data_preprocessing($question);
         $question = $this->data_preprocessing_hints($question);
@@ -132,10 +140,5 @@ class qtype_flwarrior_edit_form extends question_edit_form {
         $PAGE->requires->js_call_amd('qtype_flwarrior/debug', 'log', array($question));
 
         return $question;
-    }
-
-    public function qtype(): string
-    {
-        return 'flwarrior';
     }
 }

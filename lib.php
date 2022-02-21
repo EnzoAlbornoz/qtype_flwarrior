@@ -24,14 +24,11 @@
  */
 
 
-
 defined('MOODLE_INTERNAL') || die();
 
 
 /**
  * Checks file access for flwarrior questions.
- * @package  qtype_flwarrior
- * @category files
  * @param stdClass $course course object
  * @param stdClass $cm course module object
  * @param stdClass $context context object
@@ -40,8 +37,11 @@ defined('MOODLE_INTERNAL') || die();
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
  * @return bool
+ * @package  qtype_flwarrior
+ * @category files
  */
-function qtype_flwarrior_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+function qtype_flwarrior_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array())
+{
     global $DB, $CFG;
     require_once($CFG->libdir . '/questionlib.php');
     question_pluginfile($course, $context, 'qtype_flwarrior', $filearea, $args, $forcedownload, $options);

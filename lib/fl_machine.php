@@ -1,7 +1,12 @@
 <?php
 
 global $CFG;
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/utils.php');
 require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_machine_test.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_symbol.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_alphabet.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_state.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_transition.php');
 
 class fl_Machine
 {
@@ -15,28 +20,25 @@ class fl_Machine
     private array $states;
     private array $transitions;
     private fl_Alphabet $alphabet;
+
     // Define Constructor
-    public function __construct(string $type, fl_Alphabet $alphabet , $states = array(), $transitions = array()) {
+    public function __construct(string $type, fl_Alphabet $alphabet, $states = array(), $transitions = array())
+    {
         $this->type = $type;
         $this->alphabet = $alphabet;
         $this->states = $states;
         $this->transitions = $transitions;
     }
     // Define Helpers
-    /** @return fl_State|null */
-    public function get_initial_state(): ?fl_State {
-        $idx = flu_array_lambda_find_index($this->states, fn(fl_State $state) => $state->is_entry());
-        if ($idx < 0) {
-            return null;
-        }
-        return $this->states[$idx];
-    }
+
     /** @return fl_State[] */
-    public function get_exit_states(): array {
+    public function get_exit_states(): array
+    {
         return array_filter($this->states, fn(fl_State $state) => $state->is_exit());
     }
-    // Define Execution Functions
-    public function matches(fl_machine_test $test): bool {
+
+    public function matches(fl_machine_test $test): bool
+    {
         // Prepare Data
         $max_iterations = $test->max_iterations;
         $input_list = str_split($test->word);
@@ -54,7 +56,10 @@ class fl_Machine
         }
     }
 
-    private function fsm_matches(array $input, int $max_iterations, bool $should_match): bool {
+    // Define Execution Functions
+
+    private function fsm_matches(array $input, int $max_iterations, bool $should_match): bool
+    {
         // Define execution threads
         $threads = array(
             array(
@@ -71,7 +76,7 @@ class fl_Machine
                 return $should_match === true;
             }
             // From current execution threads, match what states can be reached
-            $computed_thread_states = array_map(function($thread_state) {
+            $computed_thread_states = array_map(function ($thread_state) {
                 // Struct Thread State
                 // \-> input = (string[]) pending input
                 // \-> state = flState
@@ -99,12 +104,24 @@ class fl_Machine
                 }, $filtered_transitions);
             }, $threads);
             // Store flatten iteration threads
-            $threads = array_unique(array_merge(...$computed_thread_states), SORT_REGULAR);
+            $threads = array_values(array_unique(array_merge(...$computed_thread_states), SORT_REGULAR));
         }
         // Max iterations reached
         return $should_match === false;
     }
-    private function pdm_matches(array $input, int $max_iterations, bool $should_match): bool {
+
+    /** @return fl_State|null */
+    public function get_initial_state(): ?fl_State
+    {
+        $idx = flu_array_lambda_find_index($this->states, fn(fl_State $state) => $state->is_entry());
+        if ($idx < 0) {
+            return null;
+        }
+        return $this->states[$idx];
+    }
+
+    private function pdm_matches(array $input, int $max_iterations, bool $should_match): bool
+    {
         // Define execution threads
         $threads = array(
             array(
@@ -121,7 +138,7 @@ class fl_Machine
                 return $should_match === true;
             }
             // From current execution threads, match what states can be reached
-            $computed_thread_states = array_map(function($thread_state) {
+            $computed_thread_states = array_map(function ($thread_state) {
                 // Struct Thread State
                 // \-> input = (string[]) pending input
                 // \-> state = flState
@@ -137,8 +154,8 @@ class fl_Machine
                         $matches_with = array_key_exists(0, $thread_state['input']) && $transition->get_with_head_symbol()->is_equal_to(fl_Symbol::symbol_for($thread_state['input'][0]));
                         $matches_with_lambda = $transition->get_with_head_symbol()->is_equal_to(fl_Symbol::EPSILON());
 
-                        $stack_values = array_values($thread_state['stack']);
-                        $matches_stack = $transition->get_with_memory_symbol()->is_equal_to(fl_Symbol::EPSILON()) || $transition->get_with_memory_symbol()->is_equal_to(end($stack_values));
+                        $matches_stack = $transition->get_with_memory_symbol()->is_equal_to(fl_Symbol::EPSILON()) ||
+                            (!empty($thread_state['stack']) && $transition->get_with_memory_symbol()->is_equal_to($thread_state['stack'][count($thread_state['stack']) - 1]));
                         return $matches_from && $matches_stack && ($matches_with || $matches_with_lambda);
                     }
                 );
@@ -147,7 +164,7 @@ class fl_Machine
                     // Compute Stack
                     /** @var fl_Symbol[] $stack */
                     $stack = $thread_state['stack'];
-                    if (!$transition->get_with_head_symbol()->is_equal_to(fl_Symbol::EPSILON())) {
+                    if (!$transition->get_with_memory_symbol()->is_equal_to(fl_Symbol::EPSILON())) {
                         array_pop($stack);
                     }
                     if (!$transition->get_write_symbol()->is_equal_to(fl_Symbol::EPSILON())) {
@@ -164,12 +181,14 @@ class fl_Machine
                 }, $filtered_transitions);
             }, $threads);
             // Store flatten iteration threads
-            $threads = array_unique(array_merge(...$computed_thread_states), SORT_REGULAR);
+            $threads = array_values(array_unique(array_merge(...$computed_thread_states), SORT_REGULAR));
         }
         // Max iterations reached
         return $should_match === false;
     }
-    private function tm_matches(array $input, int $max_iterations, bool $should_match): bool {
+
+    private function tm_matches(array $input, int $max_iterations, bool $should_match): bool
+    {
         // Define execution threads
         $threads = array(
             array(
@@ -186,7 +205,7 @@ class fl_Machine
                 return $should_match === true;
             }
             // From current execution threads, match what states can be reached
-            $computed_thread_states = array_map(function($thread_state) {
+            $computed_thread_states = array_map(function ($thread_state) {
                 // Struct Thread State
                 // \-> memory = (string[]) pending input
                 // \-> state = flState
@@ -233,7 +252,7 @@ class fl_Machine
                 }, $filtered_transitions);
             }, $threads);
             // Store flatten iteration threads
-            $threads = array_unique(array_merge(...$computed_thread_states), SORT_REGULAR);
+            $threads = array_values(array_unique(array_merge(...$computed_thread_states), SORT_REGULAR));
         }
         // Max iterations reached
         return $should_match === false;

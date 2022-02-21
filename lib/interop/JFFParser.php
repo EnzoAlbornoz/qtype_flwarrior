@@ -4,32 +4,15 @@ global $CFG;
 
 require_once($CFG->dirroot . '/question/type/flwarrior/lib/utils.php');
 require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_symbol.php');
+require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_alphabet.php');
 require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_state.php');
 require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_transition.php');
-require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_alphabet.php');
 require_once($CFG->dirroot . '/question/type/flwarrior/lib/fl_machine.php');
 
-class JFFParser {
-    private static function compute_head_direction(string $move) {
-        if ($move === "L") {
-            return fl_Transition::H_LEFT;
-        } else if ($move === "R") {
-            return fl_Transition::H_RIGHT;
-        }
-    }
-
-    private static function compute_machine_type(string $type) {
-        if ($type === "turing") {
-            return fl_Machine::TURING_MACHINE;
-        } else if ($type === "pda") {
-            return fl_Machine::PUSH_DOWN_MACHINE;
-        } else if ($type === "fa") {
-            return fl_Machine::FINITE_STATE_MACHINE;
-        }
-        return null;
-    }
-
-    public static function parse_string(string $str) {
+class JFFParser
+{
+    public static function parse_string(string $str)
+    {
         // Instantiate Document
         $xml = new DOMDocument();
         // Parse XML
@@ -44,15 +27,18 @@ class JFFParser {
         $machine_type = $xml_machine_type->textContent;
         // Read Machine States
         $xml_states = $xml->getElementsByTagName("state");
-        $states = array_map(function(DOMElement $el) {
+        error_log("[xml_states]\n".print_r($xml_states, true), 3, '/var/log/php.log');
+        $states = array_map(function (DOMElement $el) {
             $is_init = $el->getElementsByTagName("initial")->length > 0;
             $is_exit = $el->getElementsByTagName("final")->length > 0;
-            return new fl_State($el->getAttribute("id"), $is_init, $is_exit);
+            $id = $el->getAttribute("id");
+            error_log("[State] [id: $id] [entry: $is_init] [exit: $is_exit]\n", 3, '/var/log/php.log');
+            return new fl_State($id, $is_init, $is_exit);
         }, iterator_to_array($xml_states));
-        $states_obj = array_reduce($states, function($acc, fl_State $state) {
+        $states_obj = array_reduce($states, function ($acc, fl_State $state) {
             $acc[$state->get_label()] = $state;
             return $acc;
-        } , array());
+        }, array());
         // Read Symbols
         $xml_symbols = array_merge(
             iterator_to_array($xml->getElementsByTagName("read")),
@@ -60,8 +46,7 @@ class JFFParser {
             iterator_to_array($xml->getElementsByTagName("pop")),
             iterator_to_array($xml->getElementsByTagName("push")),
         );
-        print_r($xml_symbols);
-        $symbols = array_map(function(DOMElement $el) {
+        $symbols = array_map(function (DOMElement $el) {
             if ($el->textContent) {
                 return fl_Symbol::symbol_for($el->textContent);
             }
@@ -79,7 +64,7 @@ class JFFParser {
         $alphabet = new fl_Alphabet($symbols);
         // Read Machine Transitions
         $xml_transitions = $xml->getElementsByTagName("transition");
-        $transitions = array_map(function(DOMElement $el) use($machine_type, $states_obj) {
+        $transitions = array_map(function (DOMElement $el) use ($machine_type, $states_obj) {
             /** @var DOMElement $el_from */
             $el_from = $el->getElementsByTagName("from")->item(0);
             /** @var DOMElement $el_to */
@@ -128,5 +113,26 @@ class JFFParser {
             return null;
         }
         return new fl_Machine($machine_type, $alphabet, $states, $transitions);
+    }
+
+    private static function compute_head_direction(string $move)
+    {
+        if ($move === "L") {
+            return fl_Transition::H_LEFT;
+        } else if ($move === "R") {
+            return fl_Transition::H_RIGHT;
+        }
+    }
+
+    private static function compute_machine_type(string $type): ?string
+    {
+        if ($type === "turing") {
+            return fl_Machine::TURING_MACHINE;
+        } else if ($type === "pda") {
+            return fl_Machine::PUSH_DOWN_MACHINE;
+        } else if ($type === "fa") {
+            return fl_Machine::FINITE_STATE_MACHINE;
+        }
+        return null;
     }
 }
