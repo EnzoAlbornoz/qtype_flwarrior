@@ -56,8 +56,6 @@ class qtype_flwarrior_renderer extends qtype_renderer {
             </div>
         HTML;
         // Add JS
-        $PAGE->requires->js_call_amd("qtype_flwarrior/quiz_renderer", 'init');
-
         return $result;
     }
 

@@ -63,8 +63,6 @@ class qtype_flwarrior_edit_form extends question_edit_form
         $repeating_groups = array();
         $repeated_options = array();
 
-        $PAGE->requires->js_call_amd('qtype_flwarrior/debug', 'log', array($tests_in_question, ($repeating_num)));
-
         /* Define what going to be grouped in repeated elements */
         $repeat_array = array();
         /* @type HTML_QuickForm_text $test_word */
@@ -135,9 +133,6 @@ class qtype_flwarrior_edit_form extends question_edit_form
         global $PAGE;
         $question = parent::data_preprocessing($question);
         $question = $this->data_preprocessing_hints($question);
-
-
-        $PAGE->requires->js_call_amd('qtype_flwarrior/debug', 'log', array($question));
 
         return $question;
     }
