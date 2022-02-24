@@ -50,6 +50,7 @@ class qtype_flwarrior extends question_type
     }
 
     /**
+     * Upsert a list of machine tests for a given question
      * @param qtype_flwarrior_question $question
      * @return void
      * @throws dml_exception
@@ -59,9 +60,6 @@ class qtype_flwarrior extends question_type
         global $DB;
 
         $this->save_hints($question);
-
-        error_log("[save_question_options]\n", 3, "/var/log/php.log");
-
         // Save Tests in Database
         foreach ($question->{'machine-test-{no}'} as $test_form) {
             $id = array_key_exists('machine-test-id-{no}', $test_form)
@@ -91,6 +89,7 @@ class qtype_flwarrior extends question_type
     }
 
     /**
+     * Retrieves a list of machine tests that around bounded with the given question id
      * @param qtype_flwarrior_question $question
      * @return bool
      */

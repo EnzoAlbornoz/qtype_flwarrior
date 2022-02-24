@@ -27,12 +27,10 @@ class JFFParser
         $machine_type = $xml_machine_type->textContent;
         // Read Machine States
         $xml_states = $xml->getElementsByTagName("state");
-        error_log("[xml_states]\n".print_r($xml_states, true), 3, '/var/log/php.log');
         $states = array_map(function (DOMElement $el) {
             $is_init = $el->getElementsByTagName("initial")->length > 0;
             $is_exit = $el->getElementsByTagName("final")->length > 0;
             $id = $el->getAttribute("id");
-            error_log("[State] [id: $id] [entry: $is_init] [exit: $is_exit]\n", 3, '/var/log/php.log');
             return new fl_State($id, $is_init, $is_exit);
         }, iterator_to_array($xml_states));
         $states_obj = array_reduce($states, function ($acc, fl_State $state) {
