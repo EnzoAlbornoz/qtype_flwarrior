@@ -40,7 +40,6 @@ class qtype_flwarrior_renderer extends qtype_renderer {
 
         /* @var qtype_flwarrior_question Fetch Question Data */
         $question = $qa->get_question();
-        error_log("[formulation_and_controls]:\n".print_r($question->machine_tests,true), 3, "/var/log/php.log");
 
         /* Fetch Question Text */
         $question_text = $question->format_questiontext($qa);

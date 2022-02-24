@@ -76,7 +76,6 @@ class qtype_flwarrior_question extends question_graded_automatically
 
     public function is_complete_response(array $response): bool
     {
-        error_log("Teste!!!!" . print_r($response, true) . "\n", 3, '/var/log/php.log');
         // Check the filetypes.
         /** @type question_file_saver $machine_field */
         $machine_field = $response['machine'];
@@ -84,14 +83,12 @@ class qtype_flwarrior_question extends question_graded_automatically
         $allow_list = $filetypes_util->normalize_file_types(".jff");
         // Check Machine is set
         if (!(isset($machine_field) && $machine_field)) {
-            error_log("No machine\n", 3, '/var/log/php.log');
             return false;
         }
         // Check Machine has at least 1 machine
         $machine_files = array_values($machine_field->get_files());
 
         if (!array_key_exists(0, $machine_files)) {
-            error_log("No files\n", 3, '/var/log/php.log');
             return false;
         }
         // Check Machine file type
@@ -181,27 +178,23 @@ class qtype_flwarrior_question extends question_graded_automatically
     public function grade_response(array $response): array
     {
         // Get Machine file
-        error_log("[grade_response]", 3, '/var/log/php.log');
         /** @var stored_file[] $machine_files */
         $machine_files = array_values($response['machine']->get_files());
         // Get Machine Content
         $machine_file_content = $machine_files[0]->get_content();
         // Parse Machine
-        error_log("[machine_file_content]\n".$machine_file_content, 3, '/var/log/php.log');
         $machine = JFFParser::parse_string($machine_file_content);
         // If there is any error, just grade as 0
         if ($machine == null) {
             return array(0, question_state::graded_state_for_fraction(0));
         }
         // Compute fraction for each test
-        error_log("[machine]".print_r($machine, true), 3, '/var/log/php.log');
         $test_fraction_bonus = 1 / count($this->machine_tests);
         // Define initial fraction
         $fraction = 0;
         // Execute tests
         foreach ($this->machine_tests as $raw_test) {
             //Parse Test
-            error_log("[$raw_test]".print_r($raw_test, true), 3, '/var/log/php.log');
             $test = fl_machine_test::from_array($raw_test);
             $matches = $machine->matches($test);
             if ($matches) {
