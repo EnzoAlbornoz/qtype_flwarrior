@@ -60,7 +60,6 @@ class qtype_flwarrior extends question_type
         global $DB;
 
         $this->save_hints($question);
-
         // Save Tests in Database
         foreach ($question->{'machine-test-{no}'} as $test_form) {
             $id = array_key_exists('machine-test-id-{no}', $test_form)
@@ -141,6 +140,7 @@ class qtype_flwarrior extends question_type
         // Load parent data
         parent::initialise_question_instance($question, $questiondata);
         // Load tests
+        error_log("[initialise_question_instance]\n".print_r($questiondata->machine_tests, true));
         $question->machine_tests = $questiondata->machine_tests;
     }
 
